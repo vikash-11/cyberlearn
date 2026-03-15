@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CyberLearn — Vikash's Knowledge Base</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #030d12;
+  --bg2:     #051520;
+  --bg3:     #071c2a;
+  --cyber:   #00ffe7;
+  --ml:      #a855f7;
+  --bb:      #f97316;
+  --gold:    #fbbf24;
+  --text:    #b8d8e8;
+  --dim:     #3d6475;
+  --dim2:    #5a8a9f;
+  --white:   #e8f4fa;
+  --border:  rgba(0,255,231,0.12);
+  --glow-c:  0 0 24px rgba(0,255,231,0.35);
+  --glow-m:  0 0 24px rgba(168,85,247,0.35);
+  --glow-b:  0 0 24px rgba(249,115,22,0.35);
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Rajdhani', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+  cursor: none;
+  min-height: 100vh;
+}
+
+/* ─── CURSOR ─── */
+#cur { position:fixed; width:14px; height:14px; border:2px solid var(--cyber); border-radius:50%; pointer-events:none; z-index:9999; transform:translate(-50%,-50%); transition:border-color .2s, transform .15s; mix-blend-mode:difference; }
+#cur2 { position:fixed; width:5px; height:5px; background:var(--cyber); border-radius:50%; pointer-events:none; z-index:9998; transform:translate(-50%,-50%); transition:left .12s, top .12s, background .2s; }
+body:has(#ml.active) #cur { border-color:var(--ml); }
+body:has(#ml.active) #cur2 { background:var(--ml); }
+body:has(#bb.active) #cur { border-color:var(--bb); }
+body:has(#bb.active) #cur2 { background:var(--bb); }
+
+/* ─── CANVAS ─── */
+#rain { position:fixed; top:0; left:0; width:100%; height:100%; opacity:.035; z-index:0; pointer-events:none; }
+
+/* ─── SCANLINES ─── */
+body::after { content:''; position:fixed; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.07) 2px,rgba(0,0,0,.07) 4px); pointer-events:none; z-index:1; }
+
+/* ─── NAV ─── */
+nav {
+  position:fixed; top:0; width:100%; z-index:200;
+  background:rgba(3,13,18,.88); backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 36px; height:60px;
+}
+.logo {
+  font-family:'Orbitron',monospace; font-size:.95rem; font-weight:900;
+  color:var(--cyber); letter-spacing:4px; text-shadow:var(--glow-c);
+  display:flex; align-items:center; gap:10px; cursor:none;
+}
+.logo-hex { font-size:1.3rem; animation:spin 10s linear infinite; display:inline-block; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+.nav-links { display:flex; gap:6px; }
+.nb {
+  font-family:'Share Tech Mono',monospace; font-size:.68rem; letter-spacing:2px;
+  text-transform:uppercase; padding:7px 16px;
+  border:1px solid transparent; background:transparent;
+  color:var(--dim2); cursor:none; transition:all .25s;
+  clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);
+}
+.nb:hover, .nb.on { background:rgba(0,255,231,.07); border-color:var(--cyber); color:var(--cyber); text-shadow:var(--glow-c); box-shadow:var(--glow-c); }
+.nb[data-s="ml"]:hover, .nb[data-s="ml"].on { background:rgba(168,85,247,.08); border-color:var(--ml); color:var(--ml); text-shadow:var(--glow-m); box-shadow:var(--glow-m); }
+.nb[data-s="bb"]:hover, .nb[data-s="bb"].on { background:rgba(249,115,22,.08); border-color:var(--bb); color:var(--bb); text-shadow:var(--glow-b); box-shadow:var(--glow-b); }
+
+/* ─── PAGE TABS (inside section) ─── */
+.page-tabs {
+  display:flex; gap:4px; justify-content:center;
+  padding:0 36px 48px; position:relative; z-index:2;
+}
+.pt {
+  font-family:'Share Tech Mono',monospace; font-size:.65rem; letter-spacing:2px;
+  text-transform:uppercase; padding:8px 20px;
+  border:1px solid rgba(255,255,255,.08); background:transparent;
+  color:var(--dim2); cursor:none; transition:all .25s;
+}
+.pt.on, .pt:hover { background:rgba(0,255,231,.07); border-color:var(--cyber); color:var(--cyber); }
+#ml .pt.on, #ml .pt:hover { background:rgba(168,85,247,.07); border-color:var(--ml); color:var(--ml); }
+#bb .pt.on, #bb .pt:hover { background:rgba(249,115,22,.07); border-color:var(--bb); color:var(--bb); }
+
+/* ─── SECTIONS ─── */
+.section { display:none; padding:78px 0 80px; position:relative; z-index:2; }
+.section.active { display:block; animation:fadeUp .45s ease both; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(22px); } to { opacity:1; transform:translateY(0); } }
+
+/* ─── SUB-VIEWS ─── */
+.view { display:none; }
+.view.active { display:block; animation:fadeUp .3s ease both; }
+
+/* ─── SECTION HEADER ─── */
+.sh { text-align:center; padding:0 36px 20px; }
+.sh-tag { font-family:'Share Tech Mono',monospace; font-size:.65rem; letter-spacing:5px; text-transform:uppercase; margin-bottom:14px; }
+.sh-title { font-family:'Orbitron',monospace; font-size:clamp(1.8rem,4vw,3rem); font-weight:900; margin-bottom:14px; }
+.sh-sub { font-size:.95rem; color:var(--dim2); max-width:580px; margin:0 auto 32px; line-height:1.7; font-weight:300; }
+#cyber .sh-tag { color:var(--cyber); }
+#cyber .sh-title { color:var(--white); }
+#cyber .sh-title span { color:var(--cyber); text-shadow:var(--glow-c); }
+#ml .sh-tag { color:var(--ml); }
+#ml .sh-title { color:var(--white); }
+#ml .sh-title span { color:var(--ml); text-shadow:var(--glow-m); }
+#bb .sh-tag { color:var(--bb); }
+#bb .sh-title { color:var(--white); }
+#bb .sh-title span { color:var(--bb); text-shadow:var(--glow-b); }
+
+/* ─── STATS BAR ─── */
+.stats {
+  display:flex; gap:28px; flex-wrap:wrap; justify-content:center;
+  padding:20px 36px; margin-bottom:48px;
+  border-top:1px solid var(--border); border-bottom:1px solid var(--border);
+  background:rgba(0,255,231,.015);
+}
+.stat-n { font-family:'Orbitron',monospace; font-size:1.7rem; font-weight:900; }
+#cyber .stat-n { color:var(--cyber); text-shadow:var(--glow-c); }
+#ml .stat-n { color:var(--ml); text-shadow:var(--glow-m); }
+#bb .stat-n { color:var(--bb); text-shadow:var(--glow-b); }
+.stat-l { font-family:'Share Tech Mono',monospace; font-size:.58rem; color:var(--dim); letter-spacing:2px; text-transform:uppercase; margin-top:4px; }
+
+/* ─── TOPIC GRID ─── */
+.tg { padding:0 36px; max-width:1160px; margin:0 auto; }
+.cat-label {
+  font-family:'Share Tech Mono',monospace; font-size:.68rem; letter-spacing:4px;
+  text-transform:uppercase; margin-bottom:18px; padding-left:14px;
+  border-left:3px solid var(--cyber); color:var(--cyber);
+}
+#ml .cat-label { border-color:var(--ml); color:var(--ml); }
+#bb .cat-label { border-color:var(--bb); color:var(--bb); }
+.cat { margin-bottom:44px; }
+.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(295px,1fr)); gap:14px; }
+
+/* ─── TOPIC CARD ─── */
+.tc {
+  background:var(--bg2); border:1px solid rgba(0,255,231,.07);
+  padding:22px; cursor:none; transition:all .28s; position:relative; overflow:hidden;
+}
+.tc::before { content:''; position:absolute; top:0; left:0; width:3px; height:100%; background:var(--cyber); transform:scaleY(0); transition:transform .3s; transform-origin:bottom; }
+.tc:hover::before { transform:scaleY(1); }
+.tc:hover { border-color:rgba(0,255,231,.28); background:var(--bg3); transform:translateX(5px); box-shadow:-4px 0 18px rgba(0,255,231,.08); }
+#ml .tc::before { background:var(--ml); }
+#ml .tc:hover { border-color:rgba(168,85,247,.28); box-shadow:-4px 0 18px rgba(168,85,247,.08); }
+#bb .tc::before { background:var(--bb); }
+#bb .tc:hover { border-color:rgba(249,115,22,.28); box-shadow:-4px 0 18px rgba(249,115,22,.08); }
+
+.tc-head { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:10px; }
+.tc-title { font-size:1rem; font-weight:700; color:var(--white); line-height:1.3; }
+.badge { font-family:'Share Tech Mono',monospace; font-size:.55rem; letter-spacing:1px; padding:3px 7px; border-radius:2px; white-space:nowrap; flex-shrink:0; }
+.b-done { background:rgba(0,255,231,.12); color:var(--cyber); border:1px solid var(--cyber); }
+.b-wip  { background:rgba(249,115,22,.1);  color:var(--bb);    border:1px solid var(--bb); }
+.b-new  { background:rgba(168,85,247,.1);  color:var(--ml);    border:1px solid var(--ml); }
+.b-soon { background:rgba(255,255,255,.05); color:var(--dim2);  border:1px solid var(--dim); }
+
+.tc-desc { font-size:.85rem; color:var(--dim2); line-height:1.6; margin-bottom:12px; }
+.tc-tags { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:12px; }
+.tag { font-family:'Share Tech Mono',monospace; font-size:.55rem; padding:2px 7px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07); color:var(--dim); border-radius:2px; }
+.pbar { height:2px; background:rgba(255,255,255,.05); border-radius:1px; overflow:hidden; margin-bottom:10px; }
+.pfill { height:100%; border-radius:1px; background:linear-gradient(90deg,var(--cyber),rgba(0,255,231,.25)); transition:width 1.2s ease; }
+#ml .pfill { background:linear-gradient(90deg,var(--ml),rgba(168,85,247,.25)); }
+#bb .pfill { background:linear-gradient(90deg,var(--bb),rgba(249,115,22,.25)); }
+.xbtn { font-family:'Share Tech Mono',monospace; font-size:.6rem; letter-spacing:2px; color:var(--cyber); background:none; border:none; cursor:none; text-transform:uppercase; transition:opacity .2s; padding:0; }
+#ml .xbtn { color:var(--ml); }
+#bb .xbtn { color:var(--bb); }
+.xbtn:hover { opacity:.6; }
+.xcontent { display:none; margin-top:14px; padding-top:14px; border-top:1px solid rgba(255,255,255,.06); animation:fadeUp .25s ease; }
+.xcontent.open { display:block; }
+.xcontent p { font-size:.85rem; color:var(--dim2); line-height:1.8; margin-bottom:8px; }
+.xcontent h4 { font-family:'Share Tech Mono',monospace; font-size:.62rem; color:var(--cyber); letter-spacing:2px; text-transform:uppercase; margin:12px 0 6px; }
+#ml .xcontent h4 { color:var(--ml); }
+#bb .xcontent h4 { color:var(--bb); }
+.xcontent ul { padding-left:18px; }
+.xcontent li { font-size:.85rem; color:var(--dim2); line-height:1.8; }
+.xcontent code { font-family:'Share Tech Mono',monospace; font-size:.75rem; background:rgba(0,255,231,.07); color:var(--cyber); padding:2px 6px; border-radius:2px; }
+#ml .xcontent code { background:rgba(168,85,247,.1); color:var(--ml); }
+#bb .xcontent code { background:rgba(249,115,22,.1); color:var(--bb); }
+
+/* ─── ROADMAP ─── */
+.rm-wrap { padding:0 36px; max-width:900px; margin:0 auto; }
+
+.rm-intro {
+  font-size:.9rem; color:var(--dim2); line-height:1.8; margin-bottom:40px;
+  padding:20px 24px; border-left:3px solid var(--cyber);
+  background:rgba(0,255,231,.03);
+}
+#ml .rm-intro { border-color:var(--ml); background:rgba(168,85,247,.03); }
+#bb .rm-intro { border-color:var(--bb); background:rgba(249,115,22,.03); }
+
+.rm-timeline { position:relative; padding-left:32px; }
+.rm-timeline::before {
+  content:''; position:absolute; left:7px; top:0; bottom:0;
+  width:2px; background:linear-gradient(to bottom,var(--cyber),rgba(0,255,231,.1));
+}
+#ml .rm-timeline::before { background:linear-gradient(to bottom,var(--ml),rgba(168,85,247,.1)); }
+#bb .rm-timeline::before { background:linear-gradient(to bottom,var(--bb),rgba(249,115,22,.1)); }
+
+.rm-phase { margin-bottom:36px; position:relative; }
+.rm-dot {
+  position:absolute; left:-29px; top:4px;
+  width:16px; height:16px; border-radius:50%;
+  border:2px solid var(--cyber); background:var(--bg);
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Share Tech Mono',monospace; font-size:.45rem;
+  color:var(--cyber); transition:all .3s;
+}
+#ml .rm-dot { border-color:var(--ml); color:var(--ml); }
+#bb .rm-dot { border-color:var(--bb); color:var(--bb); }
+.rm-dot.done { background:var(--cyber); color:var(--bg); }
+#ml .rm-dot.done { background:var(--ml); }
+#bb .rm-dot.done { background:var(--bb); }
+.rm-dot.active-dot { box-shadow:0 0 0 4px rgba(0,255,231,.2); animation:pulse 1.5s infinite; }
+#ml .rm-dot.active-dot { box-shadow:0 0 0 4px rgba(168,85,247,.2); }
+#bb .rm-dot.active-dot { box-shadow:0 0 0 4px rgba(249,115,22,.2); }
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.5;} }
+
+.rm-phase-head { display:flex; align-items:center; gap:14px; margin-bottom:10px; flex-wrap:wrap; }
+.rm-phase-num { font-family:'Share Tech Mono',monospace; font-size:.6rem; color:var(--dim); letter-spacing:2px; }
+.rm-phase-title { font-family:'Orbitron',monospace; font-size:.85rem; font-weight:700; color:var(--white); }
+.rm-status {
+  font-family:'Share Tech Mono',monospace; font-size:.55rem; letter-spacing:1px;
+  padding:2px 8px; border-radius:2px;
+}
+.rs-done { background:rgba(0,255,231,.12); color:var(--cyber); border:1px solid var(--cyber); }
+.rs-now  { background:rgba(251,191,36,.1); color:var(--gold); border:1px solid var(--gold); }
+.rs-next { background:rgba(255,255,255,.05); color:var(--dim2); border:1px solid var(--dim); }
+
+.rm-phase-body { font-size:.88rem; color:var(--dim2); line-height:1.7; margin-bottom:12px; }
+.rm-topics { display:flex; flex-wrap:wrap; gap:6px; }
+.rm-t {
+  font-family:'Share Tech Mono',monospace; font-size:.6rem; padding:4px 10px;
+  border-radius:2px; letter-spacing:.5px;
+}
+.rt-done { background:rgba(0,255,231,.08); color:var(--cyber); border:1px solid rgba(0,255,231,.2); }
+#ml .rt-done { background:rgba(168,85,247,.08); color:var(--ml); border-color:rgba(168,85,247,.2); }
+#bb .rt-done { background:rgba(249,115,22,.08); color:var(--bb); border-color:rgba(249,115,22,.2); }
+.rt-next { background:rgba(255,255,255,.03); color:var(--dim); border:1px solid rgba(255,255,255,.07); }
+.rt-now  { background:rgba(251,191,36,.08); color:var(--gold); border:1px solid rgba(251,191,36,.25); }
+
+.rm-time { font-family:'Share Tech Mono',monospace; font-size:.6rem; color:var(--dim); letter-spacing:1px; margin-top:8px; }
+
+/* ─── HERO ─── */
+#home { display:none; padding:0; }
+#home.active { display:block; }
+#hero {
+  min-height:100vh; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  text-align:center; padding:80px 36px 40px; position:relative; z-index:2;
+}
+.h-tag { font-family:'Share Tech Mono',monospace; font-size:.65rem; letter-spacing:5px; color:var(--cyber); text-transform:uppercase; margin-bottom:18px; animation:fadeUp .7s both; }
+.h-title { font-family:'Orbitron',monospace; font-size:clamp(2.5rem,7vw,5.5rem); font-weight:900; line-height:1.05; margin-bottom:22px; animation:fadeUp .7s .1s both; }
+.h-t1 { color:var(--white); }
+.h-t2 { color:transparent; -webkit-text-stroke:1.5px var(--cyber); }
+.h-sub { font-size:1rem; color:var(--dim2); max-width:560px; line-height:1.75; margin-bottom:52px; animation:fadeUp .7s .2s both; font-weight:300; }
+.h-cards { display:flex; gap:18px; flex-wrap:wrap; justify-content:center; animation:fadeUp .7s .3s both; }
+.hc {
+  width:195px; padding:24px 18px; border:1px solid rgba(255,255,255,.06);
+  background:rgba(255,255,255,.015); cursor:none; transition:all .3s;
+  clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px));
+  position:relative;
+}
+.hc::after { content:''; position:absolute; top:0; right:0; border-left:14px solid transparent; border-top:14px solid rgba(255,255,255,.08); }
+.hc:hover { transform:translateY(-8px); }
+.hc.c:hover { border-color:var(--cyber); box-shadow:var(--glow-c); }
+.hc.m:hover { border-color:var(--ml); box-shadow:var(--glow-m); }
+.hc.b:hover { border-color:var(--bb); box-shadow:var(--glow-b); }
+.hc-icon { font-size:1.8rem; margin-bottom:10px; }
+.hc-title { font-family:'Orbitron',monospace; font-size:.68rem; font-weight:700; letter-spacing:2px; margin-bottom:8px; }
+.hc.c .hc-title { color:var(--cyber); }
+.hc.m .hc-title { color:var(--ml); }
+.hc.b .hc-title { color:var(--bb); }
+.hc-desc { font-size:.78rem; color:var(--dim); line-height:1.5; }
+.scroll-hint { position:absolute; bottom:28px; left:50%; transform:translateX(-50%); font-family:'Share Tech Mono',monospace; font-size:.6rem; color:var(--dim); letter-spacing:3px; display:flex; flex-direction:column; align-items:center; gap:8px; animation:fadeUp 1s .6s both; }
+.s-line { width:1px; height:38px; background:linear-gradient(to bottom,var(--cyber),transparent); animation:sp 1.6s infinite; }
+@keyframes sp { 0%,100%{opacity:.3;transform:scaleY(1);} 50%{opacity:1;transform:scaleY(1.4);} }
+
+/* ─── LIVE DOT ─── */
+.live { display:inline-flex; align-items:center; gap:8px; font-family:'Share Tech Mono',monospace; font-size:.6rem; color:var(--dim2); letter-spacing:2px; padding:5px 12px; border:1px solid var(--border); background:rgba(0,255,231,.025); margin-bottom:36px; }
+.ldot { width:6px; height:6px; border-radius:50%; background:var(--cyber); animation:blink 1.4s infinite; }
+@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:.15;} }
+
+/* ─── FOOTER ─── */
+footer { position:relative; z-index:2; text-align:center; padding:36px; border-top:1px solid var(--border); font-family:'Share Tech Mono',monospace; font-size:.65rem; color:var(--dim); letter-spacing:2px; }
+footer span { color:var(--cyber); }
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:640px){
+  nav { padding:0 14px; }
+  .nb { padding:5px 9px; font-size:.6rem; }
+  .sh-title { font-size:1.6rem; }
+  .tg, .rm-wrap { padding:0 14px; }
+  .page-tabs { padding:0 14px 36px; }
+  .stats { gap:16px; padding:16px; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="rain"></canvas>
+<div id="cur"></div>
+<div id="cur2"></div>
+
+<!-- ─── NAV ─── -->
+<nav>
+  <div class="logo"><span class="logo-hex">⬡</span>CYBERLEARN</div>
+  <div class="nav-links">
+    <button class="nb on"  data-s="home"  onclick="show('home',this)">HOME</button>
+    <button class="nb"     data-s="cyber" onclick="show('cyber',this)">CYBERSEC</button>
+    <button class="nb"     data-s="ml"    onclick="show('ml',this)">ML SEC</button>
+    <button class="nb"     data-s="bb"    onclick="show('bb',this)">BUG BOUNTY</button>
+  </div>
+</nav>
+
+<!-- ════════════════════════════════════════ HOME ════════════════════════════════════════ -->
+<div id="home" class="active" style="position:relative;z-index:2;">
+  <section id="hero">
+    <div class="h-tag">// knowledge base — updated daily</div>
+    <h1 class="h-title">
+      <div class="h-t1">HACK THE</div>
+      <div class="h-t2">KNOWLEDGE</div>
+    </h1>
+    <p class="h-sub">A living cybersecurity knowledge base. Notes added daily as I learn — from OSI models to ML threat detection and real-world bug bounty techniques.</p>
+    <div class="h-cards">
+      <div class="hc c" onclick="show('cyber',document.querySelector('[data-s=cyber]'))">
+        <div class="hc-icon">🛡️</div>
+        <div class="hc-title">CYBERSECURITY</div>
+        <div class="hc-desc">Networking, Linux, wireless security, protocols & tools.</div>
+      </div>
+      <div class="hc m" onclick="show('ml',document.querySelector('[data-s=ml]'))">
+        <div class="hc-icon">🤖</div>
+        <div class="hc-title">ML SECURITY</div>
+        <div class="hc-desc">Machine learning applied to threat detection & analysis.</div>
+      </div>
+      <div class="hc b" onclick="show('bb',document.querySelector('[data-s=bb]'))">
+        <div class="hc-icon">🎯</div>
+        <div class="hc-title">BUG BOUNTY</div>
+        <div class="hc-desc">OWASP, recon, exploitation techniques & reporting.</div>
+      </div>
+    </div>
+    <div class="scroll-hint">EXPLORE<div class="s-line"></div></div>
+  </section>
+</div>
+
+<!-- ════════════════════════════════════════ CYBERSECURITY ════════════════════════════════════════ -->
+<div id="cyber" class="section">
+  <div class="sh">
+    <div class="sh-tag">// module 01</div>
+    <h2 class="sh-title">CYBER<span>SECURITY</span></h2>
+    <p class="sh-sub">Networking, wireless security, Linux tools and attack/defense fundamentals — notes updated as I learn.</p>
+    <div class="live"><span class="ldot"></span>LAST UPDATED: TODAY</div>
+  </div>
+
+  <!-- TABS -->
+  <div class="page-tabs">
+    <button class="pt on" onclick="switchView('cyber','c-notes',this)">📒 NOTES</button>
+    <button class="pt"    onclick="switchView('cyber','c-road',this)">🗺️ ROADMAP</button>
+  </div>
+
+  <!-- NOTES VIEW -->
+  <div id="c-notes" class="view active">
+    <div class="stats">
+      <div class="stat"><div class="stat-n">6</div><div class="stat-l">Topics</div></div>
+      <div class="stat"><div class="stat-n">3</div><div class="stat-l">Categories</div></div>
+      <div class="stat"><div class="stat-n">4</div><div class="stat-l">Mastered</div></div>
+      <div class="stat"><div class="stat-n">↑</div><div class="stat-l">Daily</div></div>
+    </div>
+    <div class="tg">
+
+      <div class="cat">
+        <div class="cat-label">Networking Fundamentals</div>
+        <div class="grid">
+
+          <div class="tc" onclick="xt(this)">
+            <div class="tc-head"><div class="tc-title">OSI Model — 7 Layers</div><span class="badge b-done">MASTERED</span></div>
+            <div class="tc-desc">The 7-layer framework standardizing how data moves across networks — physical cables to app protocols.</div>
+            <div class="tc-tags"><span class="tag">networking</span><span class="tag">fundamentals</span><span class="tag">protocols</span></div>
+            <div class="pbar"><div class="pfill" style="width:90%"></div></div>
+            <button class="xbtn">[ EXPAND NOTES ]</button>
+            <div class="xcontent">
+              <h4>The 7 Layers (Top → Bottom)</h4>
+              <ul>
+                <li><strong>7 — Application:</strong> HTTP, DNS, FTP — user-facing protocols</li>
+                <li><strong>6 — Presentation:</strong> Encoding, encryption, SSL/TLS</li>
+                <li><strong>5 — Session:</strong> Opens/manages sessions between apps</li>
+                <li><strong>4 — Transport:</strong> TCP / UDP — port numbers live here</li>
+                <li><strong>3 — Network:</strong> IP addressing + routing (routers live here)</li>
+                <li><strong>2 — Data Link:</strong> MAC addresses (switches live here)</li>
+                <li><strong>1 — Physical:</strong> Raw bits — cables, WiFi signals</li>
+              </ul>
+              <h4>Mnemonic</h4>
+              <p><code>All People Seem To Need Data Processing</code> (7 → 1)</p>
+              <h4>Security Relevance</h4>
+              <p>Each attack targets a specific layer: ARP spoofing = L2, IP spoofing = L3, MITM = L4-7. Know the layer → know the defense.</p>
+            </div>
+          </div>
+
+          <div class="tc" onclick="xt(this)">
+            <div class="tc-head"><div class="tc-title">TCP/IP Model</div><span class="badge b-done">MASTERED</span></div>
+            <div class="tc-desc">The real-world 4-layer model powering the internet. Maps loosely to OSI but is what's actually used.</div>
+            <div class="tc-tags"><span class="tag">TCP</span><span class="tag">UDP</span><span class="tag">protocols</span></div>
+            <div class="pbar"><div class="pfill" style="width:85%"></div></div>
+            <button class="xbtn">[ EXPAND NOTES ]</button>
+            <div class="xcontent">
+              <h4>4 Layers</h4>
+              <ul>
+                <li><strong>Application</strong> — HTTP, DNS, SMTP, FTP</li>
+                <li><strong>Transport</strong> — TCP, UDP</li>
+                <li><strong>Internet</strong> — IP, ICMP, ARP</li>
+                <li><strong>Network Access</strong> — Ethernet, WiFi (802.11)</li>
+              </ul>
+              <h4>TCP vs UDP</h4>
+              <p><code>TCP</code> — 3-way handshake (SYN→SYN-ACK→ACK). Reliable, ordered. HTTP, SSH, FTP.</p>
+              <p><code>UDP</code> — No handshake. Fast, lossy. DNS, VoIP, video streaming.</p>
+            </div>
+          </div>
+
+          <div class="tc" onclick="xt(this)">
+            <div class="tc-head"><div class="tc-title">MAC Addresses & ARP</div><span class="badge b-done">MASTERED</span></div>
+            <div class="tc-desc">Hardware identifiers on NICs. ARP resolves IP→MAC on local networks. ARP spoofing = classic MITM setup.</div>
+            <div class="tc-tags"><span class="tag">Layer 2</span><span class="tag">ARP</span><span class="tag">MITM</span></div>
+            <div class="pbar"><div class="pfill" style="width:80%"></div></div>
+            <button class="xbtn">[ EXPAND NOTES ]</button>
+            <div class="xcontent">
+              <h4>ARP Process</h4>
+              <p>Device broadcasts "Who has IP X?" → Owner replies with MAC → Cache saved locally.</p>
+              <h4>ARP Spoofing Attack</h4>
+              <p>Attacker sends fake ARP replies → poisons victim's ARP cache → all traffic routes through attacker = MITM.</p>
+              <h4>Key Commands</h4>
+              <p><code>arp -a</code> — view ARP table</p>
+              <p><code>arpspoof -i eth0 -t [victim] [gateway]</code> — poison ARP</p>
+            </div>
+          </div>
+
+          <div class="tc" onclick="xt(this)">
+            <div class="tc-head"><div class="tc-title">DNS — Domain Name System</div><span class="badge b-done">MASTERED</span></div>
+            <div class="tc-desc">Translates domain names → IP addresses. Runs on UDP port 53. Critical attack surface for spoofing and tunneling.</div>
+            <div class="tc-tags"><span class="tag">DNS</span><span class="tag">port 53</span><span class="tag">UDP</span></div>
+            <div class="pbar"><div class="pfill" style="width:78%"></div></div>
+            <button class="xbtn">[ EXPAND NOTES ]</button>
+            <div class="xcontent">
+              <h4>Resolution Chain</h4>
+              <ul>
+                <li>Browser → Local resolver → Root DNS → TLD (.com) → Authoritative</li>
+                <li>Response cached at each step (TTL controls cache lifetime)</li>
+              </ul>
+              <h4>Attack Types</h4>
+              <p><code>DNS Spoofing</code> — injecting fake records to redirect traffic</p>
+              <p><code>DNS Tunneling</code> — encoding data in DNS queries for covert exfil</p>
+              <p><code>nslookup google.com</code> — basic DNS lookup</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="cat">
+        <div class="cat-label">Wireless Security</div>
+        <div class="grid">
+
+          <div class="tc" onclick="xt(this)">
+            <div class="tc-head"><div class="tc-title">Monitor Mode & Airmon-ng</div><span class="badge b-done">MASTERED</span></div>
+            <div class="tc-desc">Switching a WiFi adapter to promiscuous monitor mode to capture all wireless frames — foundation of WiFi auditing.</div>
+            <div class="tc-tags"><span class="tag">Kali</span><span class="tag">airmon-ng</span><span class="tag">802.11</span></div>
+            <div class="pbar"><div class="pfill" style="width:90%"></div></div>
+            <button class="xbtn">[ EXPAND NOTES ]</button>
+            <div class="xcontent">
+              <h4>Key Commands</h4>
+              <p><code>airmon-ng check kill</code> — kill processes that interfere</p>
+              <p><code>airmon-ng start wlan0</code> — creates wlan0mon</p>
+              <p><code>airodump-ng wlan0mon</code> — scan all nearby APs</p>
+              <p><code>airodump-ng -c 6 --bssid [MAC] -w cap wlan0mon</code> — capture target AP</p>
+              <h4>Managed vs Monitor</h4>
+              <p><code>Managed</code> — only receives frames addressed to your MAC.</p>
+              <p><code>Monitor</code> — captures ALL frames regardless of destination.</p>
+            </div>
+          </div>
+
+          <div class="tc" onclick="xt(this)">
+            <div class="tc-head"><div class="tc-title">802.11 Frame Types</div><span class="badge b-wip">IN PROGRESS</span></div>
+            <div class="tc-desc">Management, Control, and Data frames. Understanding these is essential for Wireshark analysis and deauth attacks.</div>
+            <div class="tc-tags"><span class="tag">802.11</span><span class="tag">frames</span><span class="tag">Wireshark</span></div>
+            <div class="pbar"><div class="pfill" style="width:55%"></div></div>
+            <button class="xbtn">[ EXPAND NOTES ]</button>
+            <div class="xcontent">
+              <h4>Frame Types</h4>
+              <ul>
+                <li><strong>Management (Type 0):</strong> Beacon, Probe Req/Resp, Auth, Assoc, Deauth</li>
+                <li><strong>Control (Type 1):</strong> ACK, RTS, CTS — flow control</li>
+                <li><strong>Data (Type 2):</strong> Actual payload frames</li>
+              </ul>
+              <h4>Security Relevance</h4>
+              <p>Deauth attacks forge Management frames. WPA2 handshake lives in Data frames. Wireshark filter: <code>wlan.fc.type == 0</code></p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="cat">
+        <div class="cat-label">Security Tools</div>
+        <div class="grid">
+
+          <div class="tc" onclick="xt(this)">
+            <div class="tc-head"><div class="tc-title">Nmap — Network Scanner</div><span class="badge b-done">MASTERED</span></div>
+            <div class="tc-desc">The most powerful open-source network scanner. Discovers hosts, ports, services, OS fingerprints.</div>
+            <div class="tc-tags"><span class="tag">nmap</span><span class="tag">recon</span><span class="tag">port scan</span></div>
+            <div class="pbar"><div class="pfill" style="width:85%"></div></div>
+            <button class="xbtn">[ EXPAND NOTES ]</button>
+            <div class="xcontent">
+              <h4>Essential Commands</h4>
+              <p><code>nmap -sV 192.168.1.1</code> — service/version detection</p>
+              <p><code>nmap -O target</code> — OS fingerprinting</p>
+              <p><code>nmap -sC -sV -oN out.txt target</code> — scripts + save output</p>
+              <p><code>nmap -p- target</code> — all 65535 ports</p>
+              <p><code>nmap -sS target</code> — SYN stealth scan (root required)</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div><!-- /c-notes -->
+
+  <!-- ROADMAP VIEW -->
+  <div id="c-road" class="view">
+    <div class="rm-wrap">
+      <div class="rm-intro">
+        This roadmap tracks the full cybersecurity learning path — from networking fundamentals to advanced red team techniques. Topics marked ✓ are covered in the Notes section. Currently at <strong style="color:var(--cyber)">Phase 2</strong>.
+      </div>
+      <div class="rm-timeline">
+
+        <div class="rm-phase">
+          <div class="rm-dot done">✓</div>
+          <div class="rm-phase-head">
+            <span class="rm-phase-num">PHASE 01</span>
+            <span class="rm-phase-title">Foundations</span>
+            <span class="rm-status rs-done">COMPLETE</span>
+          </div>
+          <div class="rm-phase-body">Core networking, Linux basics, security fundamentals and setting up your hacking environment.</div>
+          <div class="rm-topics">
+            <span class="rm-t rt-done">OSI Model</span>
+            <span class="rm-t rt-done">TCP/IP Stack</span>
+            <span class="rm-t rt-done">MAC / ARP</span>
+            <span class="rm-t rt-done">DNS / DHCP</span>
+            <span class="rm-t rt-done">NAT / VPN</span>
+            <span class="rm-t rt-done">Linux CLI</span>
+            <span class="rm-t rt-done">Kali Setup</span>
+            <span class="rm-t rt-done">Nmap basics</span>
+          </div>
+          <div class="rm-time">⏱ Estimated: 4–6 weeks · Status: Done</div>
+        </div>
+
+        <div class="rm-phase">
+          <div class="rm-dot active-dot">●</div>
+          <div class="rm-phase-head">
+            <span class="rm-phase-num">PHASE 02</span>
+            <span class="rm-phase-title">Network & Wireless Security</span>
+            <span class="rm-status rs-now">IN PROGRESS</span>
+          </div>
+          <div class="rm-phase-body">Deep-dive into wireless protocols, packet capture, and network-level attacks in a controlled lab environment.</div>
+          <div class="rm-topics">
+            <span class="rm-t rt-done">802.11 Frames</span>
+            <span class="rm-t rt-done">Monitor Mode</span>
+            <span class="rm-t rt-done">Aircrack-ng Suite</span>
+            <span class="rm-t rt-now">WPA2 Handshake</span>
+            <span class="rm-t rt-next">Wireshark Deep Dive</span>
+            <span class="rm-t rt-next">Packet Injection</span>
+            <span class="rm-t rt-next">Evil Twin Attack</span>
+          </div>
+          <div class="rm-time">⏱ Estimated: 3–4 weeks · Currently here</div>
+        </div>
+
+        <div class="rm-phase">
+          <div class="rm-dot">3</div>
+          <div class="rm-phase-head">
+            <span class="rm-phase-num">PHASE 03</span>
+            <span class="rm-phase-title">Web Security & OWASP</span>
+            <span class="rm-status rs-next">UPCOMING</span>
+          </div>
+          <div class="rm-phase-body">Web application vulnerabilities, Burp Suite, DVWA lab, and OWASP Top 10 exploitation techniques.</div>
+          <div class="rm-topics">
+            <span class="rm-t rt-next">Burp Suite</span>
+            <span class="rm-t rt-next">SQLi</span>
+            <span class="rm-t rt-next">XSS</span>
+            <span class="rm-t rt-next">CSRF</span>
+            <span class="rm-t rt-next">IDOR</span>
+            <span class="rm-t rt-next">DVWA Lab</span>
+            <span class="rm-t rt-next">OWASP Top 10</span>
+          </div>
+          <div class="rm-time">⏱ Estimated: 4–5 weeks</div>
+        </div>
+
+        <div class="rm-phase">
+          <div class="rm-dot">4</div>
+          <div class="rm-phase-head">
+            <span class="rm-phase-num">PHASE 04</span>
+            <span class="rm-phase-title">Exploitation & Post-Exploitation</span>
+            <span class="rm-status rs-next">UPCOMING</span>
+          </div>
+          <div class="rm-phase-body">Metasploit framework, privilege escalation, lateral movement, and persistence techniques on vulnerable VMs.</div>
+          <div class="rm-topics">
+            <span class="rm-t rt-next">Metasploit</span>
+            <span class="rm-t rt-next">Privilege Escalation</span>
+            <span class="rm-t rt-next">Reverse Shells</span>
+            <span class="rm-t rt-next">TryHackMe Labs</span>
+            <span class="rm-t rt-next">HackTheBox</span>
+          </div>
+          <div class="rm-time">⏱ Estimated: 6–8 weeks</div>
+        </div>
+
+        <div class="rm-phase">
+          <div class="rm-dot">5</div>
+          <div class="rm-phase-head">
+            <span class="rm-phase-num">PHASE 05</span>
+            <span class="rm-phase-title">Certification — eJPT / CEH</span>
+            <span class="rm-status rs-next">GOAL</span>
+          </div>
+          <div class="rm-phase-body">Prepare and sit for the eJPT certification. Then progress toward CEH or OSCP for advanced red team credentials.</div>
+          <div class="rm-topics">
+            <span class="rm-t rt-next">eJPT Cert</span>
+            <span class="rm-t rt-next">Full Pentest Report</span>
+            <span class="rm-t rt-next">OSCP (long-term)</span>
+          </div>
+          <div class="rm-time">⏱ Target: 6 months from now</div>
+        </div>
+
+      </div>
+    </div>
+  </div><!-- /c-road -->
+</div><!-- /cyber -->
+
+<!-- ════════════════════════════════════════ ML FOR SECURITY ════════════════════════════════════════ -->
+<div id="ml" class="section">
+  <div class="sh">
+    <div class="sh-tag">// module 02</div>
+    <h2 class="sh-title">ML FOR <span>SECURITY</span></h2>
+    <p class="sh-sub">Machine learning applied to cybersecurity — detection models, phishing classifiers, anomaly detection, and threat intelligence.</p>
+    <div class="live" style="border-color:rgba(168,85,247,.2); background:rgba(168,85,247,.02);"><span class="ldot" style="background:var(--ml);"></span>ACTIVELY BUILDING</div>
+  </div>
+
+  <div class="page-tabs">
+    <button class="pt on" onclick="switchView('ml','m-notes',this)">📒 NOTES</button>
+    <button class="pt"    onclick="switchView('ml','m-road',this)">🗺️ ROADMAP</button>
+  </div>
+
+  <div id="m-notes" class="view active">
+    <div class="stats">
+      <div class="stat"><div class="stat-n">3</div><div class="stat-l">Topics</div></div>
+      <div class="stat"><div class="stat-n">1</div><div class="stat-l">Project</div></div>
+      <div class="stat"><div class="stat-n">↑</div><div class="stat-l">Growing</div></div>
+    </div>
+    <div class="tg">
+      <div class="cat">
+        <div class="cat-label">Python for ML</div>
+        <div class="grid">
+
+          <div class="tc" onclick="xt(this)">
+            <div class="tc-head"><div class="tc-title">NumPy & Pandas for Security Data</div><span class="badge b-wip">IN PROGRESS</span></div>
+            <div class="tc-desc">Essential Python libraries for processing network logs, PCAP exports, firewall data and threat feeds.</div>
+            <div class="tc-tags"><span class="tag">numpy</span><span class="tag">pandas</span><span class="tag">Python</span></div>
+            <div class="pbar"><div class="pfill" style="width:45%"></div></div>
+            <button class="xbtn">[ EXPAND NOTES ]</button>
+            <div class="xcontent">
+              <h4>Pandas for Log Analysis</h4>
+              <p><code>df = pd.read_csv('firewall_logs.csv')</code></p>
+              <p><code>df[df['port'] == 22]</code> — filter SSH traffic</p>
+              <p><code>df.groupby('src_ip').count()</code> — requests per IP (detect scanning)</p>
+              <p><code>df.sort_values('bytes', ascending=False).head(10)</code> — top data transfers</p>
+              <h4>Why It Matters</h4>
+              <p>Security data (IDS alerts, Zeek logs, firewall exports) comes as CSV/JSON. Pandas lets you parse, filter and feed it to ML models.</p>
+            </div>
+          </div>
+
+          <div class="tc" onclick="xt(this)">
+            <div class="tc-head"><div class="tc-title">Supervised vs Unsupervised ML</div><span class="badge b-wip">IN PROGRESS</span></div>
+            <div class="tc-desc">Core ML paradigms and exactly where each one fits in cybersecurity applications.</div>
+            <div class="tc-tags"><span class="tag">ML basics</span><span class="tag">classification</span><span class="tag">clustering</span></div>
+            <div class="pbar"><div class="pfill" style="width:30%"></div></div>
+            <button class="xbtn">[ EXPAND NOTES ]</button>
+            <div class="xcontent">
+              <h4>Supervised (labeled data)</h4>
+              <p>Train on known malicious/benign samples. Security use cases: spam detection, malware classification, phishing URL detection, intrusion detection.</p>
+              <h4>Unsupervised (no labels)</h4>
+              <p>Find patterns without prior examples. Security use cases: network anomaly detection, zero-day discovery, user behavior clustering (UEBA).</p>
+              <h4>Key Algorithms</h4>
+              <p>Supervised: <code>Random Forest, SVM, XGBoost</code></p>
+              <p>Unsupervised: <code>K-Means, DBSCAN, Isolation Forest</code></p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="cat">
+        <div class="cat-label">Applied Projects</div>
+        <div class="grid">
+
+          <div class="tc" onclick="xt(this)">
+            <div class="tc-head"><div class="tc-title">Phishing URL Detector</div><span class="badge b-wip">BUILDING</span></div>
+            <div class="tc-desc">Build a Random Forest classifier that detects phishing URLs using URL feature engineering and the PhishTank dataset.</div>
+            <div class="tc-tags"><span class="tag">project</span><span class="tag">scikit-learn</span><span class="tag">classification</span></div>
+            <div class="pbar"><div class="pfill" style="width:20%"></div></div>
+            <button class="xbtn">[ EXPAND NOTES ]</button>
+            <div class="xcontent">
+              <h4>Features to Extract from URLs</h4>
+              <ul>
+                <li>URL length, dot count, use of @ symbol</li>
+                <li>Presence of IP address instead of domain</li>
+                <li>HTTPS or HTTP? Subdomain depth</li>
+                <li>Levenshtein distance from known brands</li>
+                <li>Domain age via WHOIS API</li>
+              </ul>
+              <h4>Pipeline</h4>
+              <p>PhishTank dataset → Feature extraction → Train/test split → <code>RandomForestClassifier</code> → Evaluate with precision, recall, F1</p>
+              <h4>Target Metrics</h4>
+              <p>Precision >95%, Recall >90% (minimize false negatives — missing phishing is worse)</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div><!-- /m-notes -->
+
+  <div id="m-road" class="view">
+    <div class="rm-wrap">
+      <div class="rm-intro">
+        This roadmap covers the full ML for Security learning path — from Python basics to deploying real threat detection models. The goal is to qualify for <strong style="color:var(--ml)">AI Security Engineer</strong> or <strong style="color:var(--ml)">Security Data Scientist</strong> roles. Currently at <strong style="color:var(--ml)">Phase 1</strong>.
+      </div>
+      <div class="rm-timeline">
+
+        <div class="rm-phase">
+          <div class="rm-dot active-dot">●</div>
+          <div class="rm-phase-head">
+            <span class="rm-phase-num">PHASE 01</span>
+            <span class="rm-phase-title">Python ML Stack</span>
+            <span class="rm-status rs-now">IN PROGRESS</span>
+          </div>
+          <div class="rm-phase-body">Master the core data science libraries needed before building any security ML models.</div>
+          <div class="rm-topics">
+            <span class="rm-t rt-now">NumPy</span>
+            <span class="rm-t rt-now">Pandas</span>
+            <span class="rm-t rt-next">Matplotlib / Seaborn</span>
+            <span class="rm-t rt-next">Scikit-learn basics</span>
+            <span class="rm-t rt-next">Jupyter Notebooks</span>
+          </div>
+          <div class="rm-time">⏱ Estimated: 3–4 weeks</div>
+        </div>
+
+        <div class="rm-phase">
+          <div class="rm-dot">2</div>
+          <div class="rm-phase-head">
+            <span class="rm-phase-num">PHASE 02</span>
+            <span class="rm-phase-title">Core ML Algorithms</span>
+            <span class="rm-status rs-next">UPCOMING</span>
+          </div>
+          <div class="rm-phase-body">Learn the most-used algorithms in security ML — classification, anomaly detection, and clustering.</div>
+          <div class="rm-topics">
+            <span class="rm-t rt-next">Random Forest</span>
+            <span class="rm-t rt-next">SVM</span>
+            <span class="rm-t rt-next">XGBoost</span>
+            <span class="rm-t rt-next">Isolation Forest</span>
+            <span class="rm-t rt-next">K-Means</span>
+            <span class="rm-t rt-next">Logistic Regression</span>
+          </div>
+          <div class="rm-time">⏱ Estimated: 4–5 weeks</div>
+        </div>
+
+        <div class="rm-phase">
+          <div class="rm-dot">3</div>
+          <div class="rm-phase-head">
+            <span class="rm-phase-num">PHASE 03</span>
+            <span class="rm-phase-title">Security ML Projects</span>
+            <span class="rm-status rs-next">UPCOMING</span>
+          </div>
+          <div class="rm-phase-body">Build real projects that demonstrate ML applied to actual cybersecurity problems.</div>
+          <div class="rm-topics">
+            <span class="rm-t rt-next">Phishing Detector</span>
+            <span class="rm-t rt-next">Network Anomaly IDS</span>
+            <span class="rm-t rt-next">Malware Classifier</span>
+            <span class="rm-t rt-next">Log Anomaly Detection</span>
+          </div>
+          <div class="rm-time">⏱ Estimated: 6–8 weeks</div>
+        </div>
+
+        <div class="rm-phase">
+          <div class="rm-dot">4</div>
+          <div class="rm-phase-head">
+            <span class="rm-phase-num">PHASE 04</span>
+            <span class="rm-phase-title">Deep Learning & NLP for Security</span>
+            <span class="rm-status rs-next">UPCOMING</span>
+          </div>
+          <div class="rm-phase-body">Apply neural networks and language models to log analysis, threat intel, and adversarial ML.</div>
+          <div class="rm-topics">
+            <span class="rm-t rt-next">PyTorch / TensorFlow</span>
+            <span class="rm-t rt-next">LSTM for log sequences</span>
+            <span class="rm-t rt-next">NLP for threat intel</span>
+            <span class="rm-t rt-next">Adversarial ML</span>
+            <span class="rm-t rt-next">LLM Security</span>
+          </div>
+          <div class="rm-time">⏱ Estimated: 8–10 weeks</div>
+        </div>
+
+        <div class="rm-phase">
+          <div class="rm-dot">5</div>
+          <div class="rm-phase-head">
+            <span class="rm-phase-num">PHASE 05</span>
+            <span class="rm-phase-title">Career Target — AI Security Engineer</span>
+            <span class="rm-status rs-next">GOAL</span>
+          </div>
+          <div class="rm-phase-body">Portfolio of 3+ security ML projects, GitHub presence, and targeting AI Security / Security Data Science roles.</div>
+          <div class="rm-topics">
+            <span class="rm-t rt-next">GitHub Portfolio</span>
+            <span class="rm-t rt-next">Kaggle Competitions</span>
+            <span class="rm-t rt-next">AI Security Engineer</span>
+            <span class="rm-t rt-next">AI Red Teamer</span>
+          </div>
+          <div class="rm-time">⏱ Target: 12 months</div>
+        </div>
+
+      </div>
+    </div>
+  </div><!-- /m-road -->
+</div><!-- /ml -->
+
+<!-- ════════════════════════════════════════ BUG BOUNTY ════════════════════════════════════════ -->
+<div id="bb" class="section">
+  <div class="sh">
+    <div class="sh-tag">// module 03</div>
+    <h2 class="sh-title">BUG <span>BOUNTY</span></h2>
+    <p class="sh-sub">Ethical hacking methodology, OWASP vulnerabilities, recon techniques, and crafting impactful vulnerability reports.</p>
+    <div class="live" style="border-color:rgba(249,115,22,.2); background:rgba(249,115,22,.02);"><span class="ldot" style="background:var(--bb);"></span>LEARNING</div>
+  </div>
+
+  <div class="page-tabs">
+    <button class="pt on" onclick="switchView('bb','b-notes',this)">📒 NOTES</button>
+    <button class="pt"    onclick="switchView('bb','b-road',this)">🗺️ ROADMAP</button>
+  </div>
+
+  <div id="b-notes" class="view active">
+    <div class="stats">
+      <div class="stat"><div class="stat-n">4</div><div class="stat-l">Topics</div></div>
+      <div class="stat"><div class="stat-n">0</div><div class="stat-l">CVEs</div></div>
+      <div class="stat"><div class="stat-n">↑</div><div class="stat-l">Growing</div></div>
+    </div>
+    <div class="tg">
+
+      <div class="cat">
+        <div class="cat-label">Methodology</div>
+        <div class="grid">
+
+          <div class="tc" onclick="xt(this)">
+            <div class="tc-head"><div class="tc-title">Bug Bounty Workflow</div><span class="badge b-wip">LEARNING</span></div>
+            <div class="tc-desc">The standard 5-step methodology from reading scope rules to writing a clear, impactful report.</div>
+            <div class="tc-tags"><span class="tag">methodology</span><span class="tag">recon</span><span class="tag">reporting</span></div>
+            <div class="pbar"><div class="pfill" style="width:35%"></div></div>
+            <button class="xbtn">[ EXPAND NOTES ]</button>
+            <div class="xcontent">
+              <h4>The 5 Steps</h4>
+              <ul>
+                <li><strong>1. Scope:</strong> Read program rules — know in/out-of-scope targets</li>
+                <li><strong>2. Recon:</strong> Subdomains, ports, tech stack fingerprinting</li>
+                <li><strong>3. Discovery:</strong> Manual testing + automated scanning</li>
+                <li><strong>4. Exploitation:</strong> Prove impact with PoC (screenshot/video)</li>
+                <li><strong>5. Report:</strong> Title, steps to reproduce, CVSS score, fix recommendation</li>
+              </ul>
+              <h4>Best Platforms to Start</h4>
+              <p><code>HackerOne</code> · <code>Bugcrowd</code> · <code>Intigriti</code> · <code>YesWeHack</code></p>
+            </div>
+          </div>
+
+          <div class="tc" onclick="xt(this)">
+            <div class="tc-head"><div class="tc-title">Recon — Subdomain Enumeration</div><span class="badge b-new">NEW</span></div>
+            <div class="tc-desc">Discovering hidden subdomains to expand attack surface before testing. The wider the recon, the more bugs you find.</div>
+            <div class="tc-tags"><span class="tag">recon</span><span class="tag">amass</span><span class="tag">subfinder</span></div>
+            <div class="pbar"><div class="pfill" style="width:20%"></div></div>
+            <button class="xbtn">[ EXPAND NOTES ]</button>
+            <div class="xcontent">
+              <h4>Tools</h4>
+              <p><code>subfinder -d target.com -o subs.txt</code></p>
+              <p><code>amass enum -d target.com</code></p>
+              <p><code>assetfinder --subs-only target.com</code></p>
+              <p><code>httpx -l subs.txt -status-code</code> — check which are live</p>
+              <h4>Sources Used Internally</h4>
+              <p>Certificate Transparency logs (crt.sh), DNS brute-force, Shodan, VirusTotal passive DNS, web crawling.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="cat">
+        <div class="cat-label">OWASP Top 10</div>
+        <div class="grid">
+
+          <div class="tc" onclick="xt(this)">
+            <div class="tc-head"><div class="tc-title">SQL Injection (SQLi)</div><span class="badge b-new">LEARNING</span></div>
+            <div class="tc-desc">Injecting malicious SQL into inputs to read, modify or delete database contents. OWASP A03:2021.</div>
+            <div class="tc-tags"><span class="tag">OWASP A03</span><span class="tag">injection</span><span class="tag">SQLmap</span></div>
+            <div class="pbar"><div class="pfill" style="width:25%"></div></div>
+            <button class="xbtn">[ EXPAND NOTES ]</button>
+            <div class="xcontent">
+              <h4>Quick Test</h4>
+              <p>Input: <code>' OR '1'='1</code> → if login bypassed → vulnerable!</p>
+              <h4>Types</h4>
+              <ul>
+                <li><strong>In-band:</strong> Error-based, Union-based (results in response)</li>
+                <li><strong>Blind:</strong> Boolean-based (<code>AND 1=1</code>), Time-based (<code>SLEEP(5)</code>)</li>
+              </ul>
+              <h4>Tool</h4>
+              <p><code>sqlmap -u "http://target.com/?id=1" --dbs</code></p>
+            </div>
+          </div>
+
+          <div class="tc" onclick="xt(this)">
+            <div class="tc-head"><div class="tc-title">XSS — Cross-Site Scripting</div><span class="badge b-new">LEARNING</span></div>
+            <div class="tc-desc">Injecting client-side scripts into pages viewed by other users. One of the most common bug bounty findings.</div>
+            <div class="tc-tags"><span class="tag">OWASP A03</span><span class="tag">XSS</span><span class="tag">JavaScript</span></div>
+            <div class="pbar"><div class="pfill" style="width:20%"></div></div>
+            <button class="xbtn">[ EXPAND NOTES ]</button>
+            <div class="xcontent">
+              <h4>Three Types</h4>
+              <ul>
+                <li><strong>Reflected:</strong> Payload in URL, reflected back in response — requires victim to click link</li>
+                <li><strong>Stored:</strong> Script saved in DB, executes for every visitor — highest impact</li>
+                <li><strong>DOM-based:</strong> Vulnerability in client-side JS processing</li>
+              </ul>
+              <h4>Basic PoC</h4>
+              <p><code>&lt;script&gt;alert(document.cookie)&lt;/script&gt;</code></p>
+              <h4>Impact</h4>
+              <p>Cookie/session theft, defacement, credential phishing, keylogging.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div><!-- /b-notes -->
+
+  <div id="b-road" class="view">
+    <div class="rm-wrap">
+      <div class="rm-intro">
+        This roadmap takes you from zero bug bounty experience to consistently finding and reporting valid vulnerabilities on platforms like HackerOne and Bugcrowd. Goal: <strong style="color:var(--bb)">first valid bug within 3 months</strong>.
+      </div>
+      <div class="rm-timeline">
+
+        <div class="rm-phase">
+          <div class="rm-dot active-dot">●</div>
+          <div class="rm-phase-head">
+            <span class="rm-phase-num">PHASE 01</span>
+            <span class="rm-phase-title">Learn the Fundamentals</span>
+            <span class="rm-status rs-now">IN PROGRESS</span>
+          </div>
+          <div class="rm-phase-body">Master HTTP, web application architecture, OWASP Top 10 concepts, and how browsers communicate with servers.</div>
+          <div class="rm-topics">
+            <span class="rm-t rt-now">HTTP/HTTPS</span>
+            <span class="rm-t rt-now">OWASP Top 10</span>
+            <span class="rm-t rt-now">SQLi basics</span>
+            <span class="rm-t rt-now">XSS basics</span>
+            <span class="rm-t rt-next">CSRF</span>
+            <span class="rm-t rt-next">IDOR</span>
+            <span class="rm-t rt-next">Broken Auth</span>
+          </div>
+          <div class="rm-time">⏱ Estimated: 3–4 weeks</div>
+        </div>
+
+        <div class="rm-phase">
+          <div class="rm-dot">2</div>
+          <div class="rm-phase-head">
+            <span class="rm-phase-num">PHASE 02</span>
+            <span class="rm-phase-title">Tooling & Lab Practice</span>
+            <span class="rm-status rs-next">UPCOMING</span>
+          </div>
+          <div class="rm-phase-body">Get hands-on with Burp Suite and practice on safe legal lab environments before touching real targets.</div>
+          <div class="rm-topics">
+            <span class="rm-t rt-next">Burp Suite Pro</span>
+            <span class="rm-t rt-next">DVWA</span>
+            <span class="rm-t rt-next">PortSwigger Labs</span>
+            <span class="rm-t rt-next">HackTheBox Web</span>
+            <span class="rm-t rt-next">SQLmap</span>
+            <span class="rm-t rt-next">ffuf / gobuster</span>
+          </div>
+          <div class="rm-time">⏱ Estimated: 4–6 weeks</div>
+        </div>
+
+        <div class="rm-phase">
+          <div class="rm-dot">3</div>
+          <div class="rm-phase-head">
+            <span class="rm-phase-num">PHASE 03</span>
+            <span class="rm-phase-title">Recon Mastery</span>
+            <span class="rm-status rs-next">UPCOMING</span>
+          </div>
+          <div class="rm-phase-body">Build a powerful automated recon pipeline. The more surface area you find, the more bugs you'll discover.</div>
+          <div class="rm-topics">
+            <span class="rm-t rt-next">Subdomain Enum</span>
+            <span class="rm-t rt-next">JS File Analysis</span>
+            <span class="rm-t rt-next">GitHub Dorking</span>
+            <span class="rm-t rt-next">Shodan / Censys</span>
+            <span class="rm-t rt-next">Google Dorks</span>
+            <span class="rm-t rt-next">Nuclei Scanner</span>
+          </div>
+          <div class="rm-time">⏱ Estimated: 3–4 weeks</div>
+        </div>
+
+        <div class="rm-phase">
+          <div class="rm-dot">4</div>
+          <div class="rm-phase-head">
+            <span class="rm-phase-num">PHASE 04</span>
+            <span class="rm-phase-title">First Real Bug</span>
+            <span class="rm-status rs-next">GOAL</span>
+          </div>
+          <div class="rm-phase-body">Pick a beginner-friendly program on HackerOne (private or public), apply everything learned, and submit your first valid report.</div>
+          <div class="rm-topics">
+            <span class="rm-t rt-next">Pick a program</span>
+            <span class="rm-t rt-next">Full recon</span>
+            <span class="rm-t rt-next">Find + verify bug</span>
+            <span class="rm-t rt-next">Write the report</span>
+            <span class="rm-t rt-next">First bounty 💰</span>
+          </div>
+          <div class="rm-time">⏱ Target: 3 months from start</div>
+        </div>
+
+        <div class="rm-phase">
+          <div class="rm-dot">5</div>
+          <div class="rm-phase-head">
+            <span class="rm-phase-num">PHASE 05</span>
+            <span class="rm-phase-title">Advanced Techniques</span>
+            <span class="rm-status rs-next">FUTURE</span>
+          </div>
+          <div class="rm-phase-body">Move beyond basics into chaining vulnerabilities, business logic flaws, and high-severity findings.</div>
+          <div class="rm-topics">
+            <span class="rm-t rt-next">SSRF</span>
+            <span class="rm-t rt-next">XXE</span>
+            <span class="rm-t rt-next">Race Conditions</span>
+            <span class="rm-t rt-next">OAuth Flaws</span>
+            <span class="rm-t rt-next">Bug Chaining</span>
+            <span class="rm-t rt-next">API Security</span>
+          </div>
+          <div class="rm-time">⏱ Estimated: ongoing</div>
+        </div>
+
+      </div>
+    </div>
+  </div><!-- /b-road -->
+</div><!-- /bb -->
+
+<footer><span>CYBERLEARN</span> · BUILT BY <span>VIKASH</span> · UPDATED DAILY<br><span style="font-size:.55rem; color:var(--dim); margin-top:6px; display:block;">// for educational purposes · ethical hacking only</span></footer>
+
+<script>
+/* ── CURSOR ── */
+const cur = document.getElementById('cur'), cur2 = document.getElementById('cur2');
+document.addEventListener('mousemove', e => {
+  cur.style.left = e.clientX+'px'; cur.style.top = e.clientY+'px';
+  setTimeout(()=>{ cur2.style.left = e.clientX+'px'; cur2.style.top = e.clientY+'px'; }, 90);
+});
+
+/* ── MATRIX RAIN ── */
+const cv = document.getElementById('rain'), cx = cv.getContext('2d');
+function resizeCv(){ cv.width = window.innerWidth; cv.height = window.innerHeight; }
+resizeCv(); window.addEventListener('resize', resizeCv);
+const CH = 'アイウエカキクコサシスセタチテトナニ01ABCDEF</>{}#$%';
+const FS = 13; let cols, drops;
+function resetDrops(){ cols = Math.floor(cv.width/FS); drops = Array(cols).fill(1); }
+resetDrops(); window.addEventListener('resize', resetDrops);
+setInterval(()=>{
+  cx.fillStyle='rgba(3,13,18,.06)'; cx.fillRect(0,0,cv.width,cv.height);
+  cx.fillStyle='#00ffe7'; cx.font=FS+'px Share Tech Mono';
+  drops.forEach((y,i)=>{
+    cx.fillText(CH[Math.floor(Math.random()*CH.length)], i*FS, y*FS);
+    if(y*FS>cv.height && Math.random()>.975) drops[i]=0; drops[i]++;
+  });
+}, 42);
+
+/* ── SECTION NAV ── */
+function show(id, btn){
+  document.querySelectorAll('#home,.section').forEach(s=>{ s.classList.remove('active'); if(s.id!=='home') s.style.display='none'; else s.style.display='none'; });
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
+  const t = document.getElementById(id);
+  if(t){ t.style.display='block'; requestAnimationFrame(()=>t.classList.add('active')); }
+  if(btn) btn.classList.add('on');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+// init home
+document.getElementById('home').style.display='block';
+
+/* ── TAB SWITCHER ── */
+function switchView(sectionId, viewId, btn){
+  const sec = document.getElementById(sectionId);
+  sec.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  sec.querySelectorAll('.pt').forEach(b=>b.classList.remove('on'));
+  const v = document.getElementById(viewId);
+  if(v) v.classList.add('active');
+  if(btn) btn.classList.add('on');
+}
+
+/* ── EXPAND CARDS ── */
+function xt(card){
+  const c = card.querySelector('.xcontent'), b = card.querySelector('.xbtn');
+  if(!c) return;
+  const open = c.classList.toggle('open');
+  b.textContent = open ? '[ COLLAPSE ]' : '[ EXPAND NOTES ]';
+}
+
+/* ── PROGRESS BAR ANIMATION ON SCROLL ── */
+const io = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const f = e.target.querySelector('.pfill');
+      if(f){ const w=f.style.width; f.style.width='0'; setTimeout(()=>f.style.width=w,80); io.unobserve(e.target); }
+    }
+  });
+},{threshold:0.3});
+document.querySelectorAll('.tc').forEach(c=>io.observe(c));
+</script>
+</body>
+</html>
